@@ -1,0 +1,104 @@
+<html>
+    <title>asmcupjs</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            background: black;
+            overflow: auto;
+        }
+        div{
+            float: left;
+       
+        }
+        canvas{
+            display: block;
+            float: top;
+        }
+    </style>
+    <script src='Java.js'></script>
+    <script src='sandbox\Frame.js'></script>
+    <script src='sandbox\Menu.js'></script>
+    <script src='sandbox\Mouse.js'></script>
+    <script src='sandbox\Utils.js'></script>
+    <script src='sandbox\DefaultContextMenu.js'></script>
+    <script src='runtime\Cell.js'></script>
+    <script src='runtime\Item.js'></script>
+    <script src='runtime\Robot.js'></script>
+    <script src='runtime\World.js'></script>
+    <script src='vm\VM.js'></script>
+    <script src='vm\VMConsts.js'></script>
+    <script src='vm\VMFuncs.js'></script>
+    <script src='compiler\Compiler.js'></script>
+    <script src='compiler\VMFuncTable.js'></script>
+    <script src='decompiler\Decompiler.js'></script>
+    <script src='compiler\RobotConstsTable.js'></script>
+    <script src='sandbox\Canvas.js'></script>
+    <script src='sandbox\CodeEditor.js'></script>
+    <script src='sandbox\Debugger.js'></script>
+    <script src='sandbox\Sandbox.js'></script>
+    <!--script src = 'runtime\Main.js'></script-->
+    <!--script src = 'D:\work\runtime-master\src\asmcupjs\compiler\Main.js'></script>
+<script src = 'D:\work\runtime-master\src\asmcupjs\decompiler\Main.js'/-->
+    <!--script src = 'sandbox\Main.js'></script-->
+    <body>
+        <div>
+            <textarea id = 'code' rows="35" cols="25" spellcheck = 'false' ></textarea>
+            </br>
+            <button onclick='uploadClicked()'>upload..</button>
+            <button onclick='helpClicked()'>help</button>
+        </div>
+        <div>
+        </div>
+    </body>
+    <script>
+        var sandbox;
+        function uploadClicked(){
+            var editText =document.getElementById('code');
+            var txt = editText.value;
+            localStorage.bot = JSON.stringify({code:txt});
+            try{
+                sandbox.robot.flash(new Compiler().compile(txt));
+            }
+            catch(err){
+                alert(err);
+            }
+        }
+        function helpClicked(){
+            alert("pushf 1.0 ; push8 #0 ; label: ; jmp label ; io ; IO_STEER,IO_MOTOR,IO_OVERCLOCK");
+        } 
+        document.body.onload = function() {
+            if(localStorage.bot){
+                var saved = JSON.parse(localStorage.bot);
+                if(saved.code)document.getElementById('code').value = saved.code;
+            }
+            console.log("starting up.");
+            loadImageSheets(function() {
+                sandbox = new Sandbox();
+                document.onkeydown = function(evt) {
+                    if (evt.key == 'y') {
+                        sandbox.world.forEachRobot(function() {
+                            if (this.reloadScript)
+                                this.reloadScript();
+                        })
+                    }
+                }
+                function loadBot(srcPath) {
+                    var bot = new Robot((Math.random() * 100) | 0);
+                    bot.src = srcPath;
+                    bot.reloadScript = function() {
+                        loadText(bot.src, function(txt) {
+                            bot.flash(new Compiler().compile(txt));
+                        });
+                    }
+                    bot.reloadScript();
+                    sandbox.add(bot);
+                }
+                //loadBot('testbot1.txt');
+                //loadBot('testbot2.txt');
+                sandbox.run();
+                //        Main();
+            });
+        }
+    </script>
+</html>
